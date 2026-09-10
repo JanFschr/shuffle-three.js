@@ -1,0 +1,47 @@
+name: Codex PR automatisch übernehmen
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  test-and-merge:
+    # Ein Fork darf nicht allein durch einen passend benannten Branch Code mit
+    # Schreibrechten ausführen. Nur interne Codex-Branches werden akzeptiert.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (startsWith(github.event.pull_request.head.ref, 'codex/') ||
+      github.event.pull_request.head.ref == 'work') &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Request ohne gespeicherte Zugangsdaten auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          persist-credentials: false
+
+      - name: JavaScript prüfen
+        run: |
+          node --check src/main.js
+          node --check src/audio.js
+          node --check src/game/simulation.js
+
+      - name: Tests ausführen
+        run: node --test
+
+      - name: Pull Request übernehmen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge "$PR_URL" --squash --delete-branch
+
+      - name: GitHub Pages aktualisieren
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main
