@@ -1,5 +1,6 @@
 # SHARD//PUCK
 
+
 Ein spielbarer Browser-Prototyp eines Cyberpunk-Shufflepuck-Duells. Die v0.2
 setzt den Kern des GDD als eigenständigen Vertical Slice um: deterministische
 120-Hz-Simulation, Maus-/Tastatursteuerung, Gegner-KI, geschwindigkeitsabhängige
