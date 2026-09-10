@@ -1,6 +1,5 @@
 # SHARD//PUCK
 
-
 Ein spielbarer Browser-Prototyp eines Cyberpunk-Shufflepuck-Duells. Die v0.2
 setzt den Kern des GDD als eigenständigen Vertical Slice um: deterministische
 120-Hz-Simulation, Maus-/Tastatursteuerung, Gegner-KI, geschwindigkeitsabhängige
@@ -18,11 +17,25 @@ Sie wird nach jedem Push auf den Branch `main` automatisch durch den enthaltenen
 GitHub-Actions-Workflow auf GitHub Pages veröffentlicht. Three.js lädt der Browser
 als fest versioniertes ES-Modul über die Import-Map.
 
-Einmalig muss im Repository unter **Settings → Pages → Build and deployment** als
-Quelle **GitHub Actions** ausgewählt werden. Danach ist das Spiel unter
+Der Workflow aktiviert GitHub Pages beim ersten Lauf automatisch und verwendet
+GitHub Actions als Veröffentlichungsquelle. Danach ist das Spiel unter
 `https://<account>.github.io/<repository>/` erreichbar. Alle internen Pfade sind
 relativ, damit die Anwendung auch unter dem Repository-Unterpfad einer Project
-Page funktioniert.
+Page funktioniert. Falls die Organisation das automatische Aktivieren von Pages
+verbietet, muss ein Repository-Administrator Pages einmalig unter
+**Settings → Pages** freigeben und anschließend den Workflow erneut starten.
+
+Pull Requests aus internen Branches mit dem Präfix `codex/` oder dem von Codex
+verwendeten Branch `work` werden nach
+erfolgreicher Syntax- und Testprüfung automatisch per Squash-Merge übernommen.
+Forks, Entwürfe und anders benannte Branches sind davon ausdrücklich
+ausgeschlossen. Damit der Workflow mergen darf, muss unter
+**Settings → Actions → General → Workflow permissions** die Option
+**Read and write permissions** aktiviert sein.
+Nach dem automatischen Merge stößt die Action zusätzlich das GitHub-Pages-
+Deployment für `main` an.
+Die Pull-Request-Änderung, welche diese Action erstmals einführt, muss einmalig
+manuell gemergt werden; erst danach kann der Workflow neue Codex-PRs erkennen.
 
 Ein eigener Server, ein lokaler Python-Prozess oder ein Node.js-Prozess zur
 Laufzeit ist nicht erforderlich. Node.js wird ausschließlich für den optionalen
