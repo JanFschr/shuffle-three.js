@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FIXED_STEP, TABLE, createGame, setTarget, startGame, stepGame } from "./simulation.js";
+import { FIXED_STEP, TABLE, createGame, setPower, setTarget, startGame, stepGame } from "./simulation.js";
 
 test("serves the puck after the cue", () => {
   const game = createGame(); startGame(game);
@@ -19,9 +19,39 @@ test("applies more damage to a faster goal", () => {
   assert.ok(score(13) > score(4));
 });
 
-test("clamps pointer targets to the player half", () => {
+test("the full width of either end line scores without a rear-wall bounce", () => {
+  for (const x of [0, TABLE.halfWidth - .27, -TABLE.halfWidth + .27]) {
+    const game = createGame(); game.phase = "playing"; game.puck.x = x; game.puck.y = -TABLE.halfLength - .27; game.puck.vy = -8;
+    const events = stepGame(game);
+    assert.ok(events.some(event => event.type === "goal" && event.side === "player"));
+    assert.ok(!events.some(event => event.type === "rail"));
+  }
+});
+
+test("clamps pointer targets to the player defensive zone", () => {
   const game = createGame(); setTarget(game, { x: 99, y: -99 });
-  assert.ok(game.playerTarget.x < TABLE.halfWidth); assert.ok(game.playerTarget.y > 0);
+  assert.ok(game.playerTarget.x < TABLE.halfWidth); assert.equal(game.playerTarget.y, TABLE.playerMinY);
+});
+
+test("enemy remains inside its defensive zone", () => {
+  const game = createGame(); game.phase = "playing"; game.puck.y = -1; game.puck.vy = -12;
+  for (let i = 0; i < 240; i++) { stepGame(game); assert.ok(game.enemy.y <= TABLE.enemyMaxY); }
+});
+
+test("power cannot move a puck without contact", () => {
+  const game = createGame(); game.phase = "playing"; game.puck.x = 0; game.puck.y = 0; setPower(game, true);
+  for (let i = 0; i < 30; i++) stepGame(game);
+  assert.equal(game.puck.vx, 0); assert.equal(game.puck.vy, 0);
+});
+
+test("power contact creates a stronger return than normal contact", () => {
+  const collide = power => {
+    const game = createGame(); game.phase = "playing"; setPower(game, power);
+    Object.assign(game.player, { x: 0, y: 6, vx: 0, vy: -4 });
+    game.playerTarget = { x: 0, y: 5 }; Object.assign(game.puck, { x: 0, y: 5.2, vx: 0, vy: 1 });
+    stepGame(game); return -game.puck.vy;
+  };
+  assert.ok(collide(true) > collide(false));
 });
 
 test("is deterministic for identical inputs", () => {

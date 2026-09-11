@@ -13,7 +13,7 @@ export class GameAudio {
       this.effects.gain.value = .8;
       this.effects.connect(this.master);
       this.music = this.context.createGain();
-      this.music.gain.value = .22;
+      this.music.gain.value = .12;
       this.music.connect(this.master);
     }
     void this.context.resume();
@@ -57,16 +57,17 @@ export class GameAudio {
     source.connect(filter); filter.connect(gain); gain.connect(destination); source.start();
   }
 
-  hit(kind, intensity = .5) {
+  hit(kind, intensity = .5, pan = 0) {
     if (!this.enabled) return;
     this.ensure();
     const strength = Math.max(.1, Math.min(1, intensity));
     if (kind === "rail") {
-      this.tone(190, .11, .08 + strength * .12, "triangle");
-      this.noise(.045, .025 + strength * .04, this.effects);
+      const panner = this.context.createStereoPanner(); panner.pan.value = Math.max(-.7, Math.min(.7, pan)); panner.connect(this.effects);
+      this.tone(520 + strength * 180, .055, .07 + strength * .1, "triangle", panner);
+      this.noise(.025, .018 + strength * .03, panner);
     } else if (kind === "striker") {
-      this.tone(105, .14, .1 + strength * .14, "square");
-      this.tone(64, .18, .06, "sine", this.effects, .012);
+      this.tone(125 + strength * 70, .065, .1 + strength * .15, "square");
+      this.tone(72, .09, .055, "sine", this.effects, .006);
     } else if (kind === "goal") {
       this.tone(62, .42, .2, "sawtooth");
       this.noise(.22, .11, this.effects);
