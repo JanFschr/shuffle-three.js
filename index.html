@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07090f" />
+    <title>SHARD//PUCK — Cinder Row</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game" aria-label="Shufflepuck-Spielfeld"></canvas>
+      <div class="scanlines" aria-hidden="true"></div>
+      <header class="hud top">
+        <div class="brand"><span>SHARD</span><b>//</b>PUCK <small>DUEL_02</small></div>
+        <div class="status"><i></i> CINDER ROW // LIVE</div>
+      </header>
+      <section class="opponent" aria-label="Gegnerstatus">
+        <div class="eyebrow">GEGNER // VETERAN-KLASSE</div>
+        <div class="name">OLD SAINT</div>
+        <div class="integrity"><span id="enemy-bar"></span></div>
+        <div class="readout"><span>BARRIER</span><strong id="enemy-hp">100</strong><span>%</span></div>
+      </section>
+      <div id="message" class="message visible">
+        <span class="eyebrow">CINDER ROW // VERTRAG 02</span>
+        <h1>BREAK DUEL</h1>
+        <p>ZERBRICH DIE BARRIERE</p>
+        <button id="start">DUELL STARTEN <kbd>ENTER</kbd></button>
+      </div>
+      <div id="pause-message" class="message pause-message" role="status">
+        <span class="eyebrow">SYSTEM // ANGEHALTEN</span>
+        <h1>PAUSE</h1>
+        <p>P ODER ESC ZUM FORTSETZEN</p>
+        <button id="resume" type="button">FORTSETZEN</button>
+      </div>
+      <aside class="telemetry">
+        <div><span>PUCK</span><b id="speed">000</b><small> KM/H</small></div>
+        <div><span>RALLY</span><b id="rally">00</b></div>
+      </aside>
+      <footer class="hud bottom">
+        <div class="player-health">
+          <div class="readout"><span>DEINE BARRIERE</span><strong id="player-hp">100</strong><span>%</span></div>
+          <div class="integrity"><span id="player-bar"></span></div>
+        </div>
+        <div class="ability"><kbd>SPACE</kbd><span><b>IMPULS</b><small id="ability-state">BEREIT</small></span></div>
+        <button id="pause-toggle" class="pause-toggle" type="button" aria-pressed="false">PAUSE</button>
+        <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AUDIO AN</button>
+        <div class="controls">MAUS / WASD &nbsp;·&nbsp; P PAUSE &nbsp;·&nbsp; R RESET</div>
+      </footer>
+      <nav class="mobile-controls" aria-label="Mobile Spielsteuerung">
+        <div class="dpad" aria-label="Schläger bewegen">
+          <button class="move up" type="button" data-code="KeyW" aria-label="Schläger nach vorne">▲</button>
+          <button class="move left" type="button" data-code="KeyA" aria-label="Schläger nach links">◀</button>
+          <button class="move down" type="button" data-code="KeyS" aria-label="Schläger nach hinten">▼</button>
+          <button class="move right" type="button" data-code="KeyD" aria-label="Schläger nach rechts">▶</button>
+        </div>
+        <button id="mobile-impulse" class="mobile-impulse" type="button" aria-label="Impuls-Schlag ausführen"><b>SCHLAG</b><span>IMPULS</span></button>
+      </nav>
+    </div>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
