@@ -2,44 +2,59 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07090f" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#120d09" />
     <title>SHARD//PUCK — Cinder Row</title>
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
     <div id="app">
       <canvas id="game" aria-label="Shufflepuck-Spielfeld"></canvas>
+      <div class="grain" aria-hidden="true"></div>
       <div class="scanlines" aria-hidden="true"></div>
-      <header class="hud top"><button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AUDIO AN</button></header>
+
+      <header class="hud top">
+        <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AUDIO AN</button>
+      </header>
+
       <section class="opponent" aria-label="Gegnerstatus">
         <div class="name">OLD SAINT</div>
         <div class="integrity"><span id="enemy-bar"></span></div>
         <div class="readout"><strong id="enemy-hp">100</strong></div>
       </section>
+
       <div id="message" class="message visible">
-        <span class="eyebrow">CINDER ROW // VERTRAG 02</span>
+        <span class="eyebrow">CINDER ROW // TISCH 02</span>
         <h1>BREAK DUEL</h1>
-        <p>ZERBRICH DIE BARRIERE</p>
+        <p>PUCK LIEGT BEREIT — DU ERÖFFNEST</p>
         <button id="start">DUELL STARTEN <kbd>ENTER</kbd></button>
       </div>
+
       <div id="pause-message" class="message pause-message" role="status">
         <span class="eyebrow">SYSTEM // ANGEHALTEN</span>
         <h1>PAUSE</h1>
         <p>P ODER ESC ZUM FORTSETZEN</p>
       </div>
+
       <aside class="telemetry" aria-label="Debug-Telemetrie">
         <div><span>PUCK</span><b id="speed">000</b><small> KM/H</small></div>
         <div><span>RALLY</span><b id="rally">00</b></div>
       </aside>
+
       <footer class="hud bottom">
         <div class="player-health">
           <div class="readout"><span>YOU</span><strong id="player-hp">100</strong></div>
           <div class="integrity"><span id="player-bar"></span></div>
         </div>
-        <button id="power" class="power" type="button" aria-label="Power-Schlägerprofil halten"><b>POWER</b><small>HALTEN</small></button>
+
+        <button id="surge-meter" class="surge-meter" type="button" disabled aria-label="Kinetische Ladung. Bei voller Leiste antippen, um Surge auszulösen.">
+          <span class="meter-head"><b>CHARGE</b><em id="surge-value">0</em></span>
+          <span class="meter-track"><i id="surge-fill"></i></span>
+          <small id="surge-state">CONTACTS // GOALS</small>
+        </button>
       </footer>
     </div>
+
     <script type="importmap">
       {
         "imports": {

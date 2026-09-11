@@ -1,28 +1,238 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
-:root { font-family: "JetBrains Mono", monospace; color: #e9f5f2; background: #05070b; font-synthesis: none; }
+:root {
+  font-family: "JetBrains Mono", monospace;
+  color: #eee8d8;
+  background: #120d09;
+  font-synthesis: none;
+}
+
 * { box-sizing: border-box; }
-html, body, #app { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-canvas { display: block; width: 100%; height: 100%; cursor: none; touch-action: none; }
-.scanlines { position: fixed; inset: 0; pointer-events: none; opacity: .13; background: repeating-linear-gradient(0deg, transparent 0 3px, #000 4px); mix-blend-mode: multiply; }
-.hud { position: fixed; z-index: 2; left: 0; width: 100%; display: flex; align-items: center; padding: 22px 34px; pointer-events: none; }
-.top { top: 0; justify-content: flex-end; background: linear-gradient(#160f0ac0, transparent); }
-.brand { font-family: "Chakra Petch"; font-size: 22px; font-weight: 700; letter-spacing: 2px; }
-.brand span, .brand b { color: #ff3e72; } .brand b { padding: 0 2px; }
-.brand small { margin-left: 12px; font: 9px "JetBrains Mono"; color: #709089; letter-spacing: 1px; }
-.status { color: #7ca59c; font-size: 9px; letter-spacing: 2px; }.status i { display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: #52ffd0; box-shadow: 0 0 9px #52ffd0; }
-.opponent { position: fixed; z-index: 2; top: 22px; left: 28px; width: 190px; }.eyebrow { color: #927762; font-size: 8px; letter-spacing: 1.8px; }.name { font: 600 16px "Chakra Petch"; letter-spacing: 3px; margin: 5px 0 7px; }
-.integrity { height: 4px; overflow: hidden; background: #19342e; clip-path: polygon(0 0,100% 0,97% 100%,0 100%); }.integrity span { display: block; height: 100%; width: 100%; background: #58ffd2; box-shadow: 0 0 7px #58ffd2; transition: width .35s, background .3s; }
-.readout { display: flex; align-items: baseline; gap: 7px; color: #6e8c86; font-size: 8px; margin-top: 6px; }.readout strong { color: #e9f5f2; font-size: 14px; margin-left: auto; }
-.message { position: fixed; z-index: 4; top: 50%; left: 50%; min-width: 390px; padding: 30px 44px; transform: translate(-50%,-45%); text-align: center; background: #07100fea; border: 1px solid #53ffd17c; box-shadow: 0 0 70px #1bffc626, inset 0 0 30px #1bffc60d; clip-path: polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); transition: opacity .25s, transform .25s; }
-.message:not(.visible) { opacity: 0; pointer-events: none; transform: translate(-50%,-43%); }.message h1 { font: 700 42px "Chakra Petch"; letter-spacing: 8px; margin: 8px 0 0; }.message p { color: #8cb0a8; font-size: 10px; letter-spacing: 3px; }
+html, body { margin: 0; width: 100%; height: 100%; min-height: 100dvh; overflow: hidden; background: #120d09; }
+body { overscroll-behavior: none; }
+#app { position: fixed; inset: 0; width: 100vw; height: 100dvh; overflow: hidden; }
+canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; cursor: none; touch-action: none; }
+
+.grain,
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.grain {
+  opacity: .16;
+  background:
+    repeating-linear-gradient(113deg, transparent 0 11px, #d09a5a12 12px, transparent 13px 27px),
+    repeating-linear-gradient(17deg, transparent 0 17px, #00000028 18px, transparent 20px 39px);
+  mix-blend-mode: soft-light;
+}
+
+.scanlines {
+  opacity: .09;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, #000 4px);
+  mix-blend-mode: multiply;
+}
+
+.hud {
+  position: fixed;
+  z-index: 3;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.top {
+  top: 0;
+  justify-content: flex-end;
+  padding: max(14px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) 12px max(18px, env(safe-area-inset-left));
+  background: linear-gradient(#1d120bc4, transparent);
+}
+
+.opponent {
+  position: fixed;
+  z-index: 3;
+  top: max(18px, env(safe-area-inset-top));
+  left: max(22px, env(safe-area-inset-left));
+  width: 190px;
+  pointer-events: none;
+}
+
+.eyebrow { color: #ad8f6e; font-size: 8px; letter-spacing: 1.8px; }
+.name {
+  font: 600 17px "Chakra Petch";
+  letter-spacing: 3.5px;
+  margin: 5px 0 7px;
+  color: #f0eee3;
+  text-shadow: 1px 1px 0 #372315;
+}
+
+.integrity {
+  height: 5px;
+  overflow: hidden;
+  background: #24332c;
+  border-bottom: 1px solid #8e694a55;
+  clip-path: polygon(0 0,100% 0,97% 100%,0 100%);
+}
+.integrity span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #68e4c2;
+  box-shadow: 0 0 6px #68e4c277;
+  transition: width .35s, background .3s;
+}
+
+.readout { display: flex; align-items: baseline; gap: 7px; color: #7d9088; font-size: 8px; margin-top: 6px; }
+.readout strong { color: #eee8d8; font-size: 14px; margin-left: auto; }
+
+.message {
+  position: fixed;
+  z-index: 5;
+  top: 50%;
+  left: 50%;
+  min-width: 390px;
+  padding: 30px 44px;
+  transform: translate(-50%,-45%) rotate(-.12deg);
+  text-align: center;
+  color: #f0eee3;
+  background:
+    linear-gradient(180deg, #151912f2 0%, #0a1512f3 70%),
+    repeating-linear-gradient(90deg, #ffffff05 0 1px, transparent 1px 8px);
+  border: 1px solid #4e8d7d;
+  outline: 1px solid #a06c3c55;
+  outline-offset: -7px;
+  box-shadow: 0 18px 70px #0009, inset 0 0 36px #07110eaa;
+  clip-path: polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+  transition: opacity .25s, transform .25s;
+}
+
+.message::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  opacity: .22;
+  background: repeating-linear-gradient(177deg, transparent 0 9px, #d0a46a12 10px, transparent 11px 21px);
+  mix-blend-mode: screen;
+}
+
+.message.final {
+  border-color: #b36a42;
+  outline-color: #d7a15e88;
+  background:
+    radial-gradient(circle at 52% 18%, #5c2f1d45, transparent 38%),
+    linear-gradient(180deg, #1f1810f4, #071310f4);
+  box-shadow: 0 20px 80px #000c, inset 0 0 48px #8f3e1c24;
+}
+
+.message:not(.visible) { opacity: 0; pointer-events: none; transform: translate(-50%,-43%) rotate(-.12deg); }
+.message h1 {
+  font: 700 42px "Chakra Petch";
+  letter-spacing: 7px;
+  margin: 8px 0 0;
+  text-shadow: 2px 2px 0 #3c2a1c, -1px 0 #a8c9bf44;
+}
+.message p { color: #9fb3a8; font-size: 10px; letter-spacing: 2.6px; }
 .pause-message { pointer-events: none; min-width: 310px; }
-button { margin-top: 16px; padding: 12px 18px; border: 1px solid #ff4b78; color: #fff; background: #ff36653d; font: 600 10px "JetBrains Mono"; letter-spacing: 1.5px; cursor: pointer; } button:hover { background: #ff366570; } kbd { color: #7c9a94; font: inherit; font-size: 8px; margin-left: 8px; }
-.telemetry { display:none; position: fixed; z-index: 2; right: 32px; top: 43%; text-align: right; color: #56756e; }.debug .telemetry{display:block}.telemetry div { border-right: 2px solid #d26e4e; padding: 5px 10px 5px 25px; margin: 8px 0; background: linear-gradient(90deg,transparent,#111418aa); }.telemetry span { display: block; font-size: 7px; letter-spacing: 2px; }.telemetry b { color: #d3e9e4; font-size: 15px; }.telemetry small { font-size: 7px; }
-.bottom { bottom: 0; min-height: 72px; justify-content: space-between; align-items: flex-end; background: linear-gradient(transparent,#160f0ac9); }.player-health { width: 210px; }.player-health .integrity span { background: #df665b; box-shadow: 0 0 7px #df665b; }.player-health .readout strong { font-size: 17px; }
-.power { pointer-events:auto; margin:0; min-width:84px; display:flex; flex-direction:column; align-items:center; border-color:#9b7048;background:#2a1c12c9;touch-action:none;user-select:none}.power small{font-size:7px;color:#a99179}.power.active{background:#a84e31;border-color:#f0b06b;transform:scale(.96)}
-.audio-toggle { pointer-events: auto; margin: 0; padding: 7px 10px; color: #9bb5ae; border-color: #45635c; background: #09110fbd; }
-@media(max-width:700px){ .hud{padding:12px}.opponent{left:12px;top:12px;width:155px}.telemetry{display:none!important}.message{min-width:min(360px,90vw);padding:24px}.message h1{font-size:30px}.player-health{width:150px}.audio-toggle{opacity:.65}.bottom{min-height:64px}.power{min-width:74px;padding:10px} }
+
+button {
+  margin-top: 16px;
+  padding: 12px 18px;
+  border: 1px solid #b94c58;
+  color: #f5f1e6;
+  background: #5e26303d;
+  font: 600 10px "JetBrains Mono";
+  letter-spacing: 1.5px;
+  cursor: pointer;
+}
+button:hover { background: #78313f66; }
+kbd { color: #889c94; font: inherit; font-size: 8px; margin-left: 8px; }
+
+.telemetry {
+  display: none;
+  position: fixed;
+  z-index: 3;
+  right: 32px;
+  top: 43%;
+  text-align: right;
+  color: #667c73;
+}
+.debug .telemetry { display: block; }
+.telemetry div { border-right: 2px solid #b36545; padding: 5px 10px 5px 25px; margin: 8px 0; background: linear-gradient(90deg,transparent,#111418aa); }
+.telemetry span { display: block; font-size: 7px; letter-spacing: 2px; }
+.telemetry b { color: #d8e6dc; font-size: 15px; }
+.telemetry small { font-size: 7px; }
+
+.bottom {
+  bottom: 0;
+  min-height: 68px;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 10px max(22px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+  background: linear-gradient(transparent,#24130cbb);
+}
+
+.player-health { width: 210px; }
+.player-health .integrity span { background: #d86655; box-shadow: 0 0 6px #d8665577; }
+.player-health .readout strong { font-size: 17px; }
+
+.surge-meter {
+  pointer-events: auto;
+  width: 126px;
+  margin: 0;
+  padding: 7px 9px 8px;
+  text-align: left;
+  border: 1px solid #806447;
+  background: #1c1710d9;
+  color: #c9bba6;
+  touch-action: manipulation;
+  user-select: none;
+  clip-path: polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px);
+  transition: border-color .15s, transform .12s, background .15s;
+}
+.surge-meter:disabled { cursor: default; opacity: .82; }
+.meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.meter-head b { font: 600 9px "Chakra Petch"; letter-spacing: 1.7px; }
+.meter-head em { font-style: normal; font-size: 9px; color: #a38c70; }
+.meter-track { display: block; height: 5px; margin: 5px 0 4px; background: #0a0e0c; border: 1px solid #463a2b; overflow: hidden; }
+.meter-track i { display: block; width: 0; height: 100%; background: linear-gradient(90deg,#9b5b39,#d49a52,#82d8bf); box-shadow: 0 0 7px #a3e7d1aa; transition: width .18s ease-out; }
+.surge-meter small { display: block; font-size: 6px; line-height: 1.1; color: #776c5d; letter-spacing: .7px; }
+.surge-meter.ready { border-color: #8edcc6; background: #15251fdf; animation: meter-ready 1.15s steps(2,end) infinite; }
+.surge-meter.ready .meter-head em,
+.surge-meter.ready small { color: #b9eee0; }
+.surge-meter.active { border-color: #d28a4b; background: #352013e8; transform: scale(.97); }
+.surge-meter.active .meter-track i { width: 100% !important; animation: surge-scan .32s linear infinite; }
+
+@keyframes meter-ready { 50% { box-shadow: inset 0 0 14px #70d7ba25, 0 0 8px #70d7ba22; } }
+@keyframes surge-scan { 50% { filter: brightness(1.6); } }
+
+.audio-toggle {
+  pointer-events: auto;
+  margin: 0;
+  padding: 7px 10px;
+  color: #9bad9f;
+  border-color: #4f6259;
+  background: #15140fbd;
+}
+
+@media (max-width: 700px) {
+  .opponent { left: max(12px, env(safe-area-inset-left)); top: max(12px, env(safe-area-inset-top)); width: 155px; }
+  .telemetry { display: none !important; }
+  .message { min-width: min(360px, 90vw); padding: 24px; }
+  .message h1 { font-size: 30px; letter-spacing: 5px; }
+  .player-health { width: 142px; }
+  .audio-toggle { opacity: .72; }
+  .bottom { min-height: 56px; padding-top: 7px; }
+  .surge-meter { width: 108px; padding: 6px 7px; }
+  .surge-meter small { font-size: 5.5px; }
+}
+
 @media (max-width: 700px) and (orientation: portrait) {
-  .bottom { min-height: 58px; align-items: center; }
+  .bottom { align-items: center; background: linear-gradient(transparent,#1e120bc0); }
+  .player-health .readout { margin-top: 2px; }
+  .opponent .readout { display: none; }
 }
