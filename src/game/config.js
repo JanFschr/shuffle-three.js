@@ -2,7 +2,9 @@ export const GAMEPLAY = Object.freeze({
   table: Object.freeze({
     halfWidth: 4.5,
     halfLength: 8,
-    strikerZoneDepth: 3,
+    playerZoneDepth: 4,
+    enemyZoneDepth: 3,
+    serveDepth: 3,
   }),
   puck: Object.freeze({
     radius: .27,
@@ -36,13 +38,13 @@ export const GAMEPLAY = Object.freeze({
 
 export const TABLE = Object.freeze({
   ...GAMEPLAY.table,
-  playerMinY: GAMEPLAY.table.halfLength - GAMEPLAY.table.strikerZoneDepth,
+  playerMinY: GAMEPLAY.table.halfLength - GAMEPLAY.table.playerZoneDepth,
   playerMaxY: GAMEPLAY.table.halfLength - GAMEPLAY.player.halfDepth - .12,
   enemyMinY: -GAMEPLAY.table.halfLength + GAMEPLAY.enemy.halfDepth + .12,
-  enemyMaxY: -GAMEPLAY.table.halfLength + GAMEPLAY.table.strikerZoneDepth,
+  enemyMaxY: -GAMEPLAY.table.halfLength + GAMEPLAY.table.enemyZoneDepth,
 });
 
 export const SERVE = Object.freeze({
-  playerPuckY: TABLE.playerMinY - GAMEPLAY.puck.serveInset,
-  enemyPuckY: TABLE.enemyMaxY + GAMEPLAY.puck.serveInset,
+  playerPuckY: GAMEPLAY.table.halfLength - GAMEPLAY.table.serveDepth - GAMEPLAY.puck.serveInset,
+  enemyPuckY: -GAMEPLAY.table.halfLength + GAMEPLAY.table.serveDepth + GAMEPLAY.puck.serveInset,
 });
