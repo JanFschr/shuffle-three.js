@@ -12,26 +12,29 @@
       <canvas id="game" aria-label="Shufflepuck-Spielfeld"></canvas>
       <div class="grain" aria-hidden="true"></div>
       <div class="scanlines" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
+      <div id="impact-flash" class="impact-flash" aria-hidden="true"></div>
 
       <header class="hud top">
-        <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AUDIO AN</button>
+        <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">AUDIO</button>
       </header>
 
       <section class="opponent" aria-label="Gegnerstatus">
+        <span class="eyebrow">CINDER ROW // 02</span>
         <div class="name">OLD SAINT</div>
         <div class="integrity"><span id="enemy-bar"></span></div>
         <div class="readout"><strong id="enemy-hp">100</strong></div>
       </section>
 
       <div id="message" class="message visible">
-        <span class="eyebrow">CINDER ROW // TISCH 02</span>
+        <span class="eyebrow">CINDER ROW // TABLE LINK</span>
         <h1>BREAK DUEL</h1>
-        <p>PUCK LIEGT BEREIT — DU ERÖFFNEST</p>
+        <p>PUCK LIEGT BEREIT — DIREKT ZIEHEN UND SCHLAGEN</p>
         <button id="start">DUELL STARTEN <kbd>ENTER</kbd></button>
       </div>
 
       <div id="pause-message" class="message pause-message" role="status">
-        <span class="eyebrow">SYSTEM // ANGEHALTEN</span>
+        <span class="eyebrow">TABLE LINK // HOLD</span>
         <h1>PAUSE</h1>
         <p>P ODER ESC ZUM FORTSETZEN</p>
       </div>
@@ -48,9 +51,9 @@
         </div>
 
         <button id="surge-meter" class="surge-meter" type="button" disabled aria-label="Kinetische Ladung. Bei voller Leiste antippen, um Surge auszulösen.">
-          <span class="meter-head"><b>CHARGE</b><em id="surge-value">0</em></span>
+          <span class="meter-head"><b>KINETIC</b><em id="surge-value">0</em></span>
           <span class="meter-track"><i id="surge-fill"></i></span>
-          <small id="surge-state">CONTACTS // GOALS</small>
+          <small id="surge-state">KINETIC CELLS</small>
         </button>
       </footer>
     </div>
