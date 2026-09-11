@@ -2,7 +2,7 @@ export const GAMEPLAY = Object.freeze({
   table: Object.freeze({
     halfWidth: 4.5,
     halfLength: 8,
-    playerZoneDepth: 4,
+    playerZoneDepth: 4.8,
     enemyZoneDepth: 3,
     serveDepth: 3,
   }),
