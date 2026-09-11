@@ -8,7 +8,7 @@ export const GAMEPLAY = Object.freeze({
     radius: .27,
     maxSpeed: 15,
     damping: .045,
-    serveInset: .78,
+    serveInset: .48,
   }),
   player: Object.freeze({
     halfWidth: .74,
