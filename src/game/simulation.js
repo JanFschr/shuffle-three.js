@@ -6,8 +6,22 @@ export const FIXED_STEP = 1 / 120;
 export function createGame() {
   return {
     puck: { x: 0, y: SERVE.playerPuckY, vx: 0, vy: 0, radius: GAMEPLAY.puck.radius },
-    player: { x: 0, y: GAMEPLAY.player.startY, vx: 0, vy: 0, radius: GAMEPLAY.player.radius },
-    enemy: { x: 0, y: GAMEPLAY.enemy.startY, vx: 0, vy: 0, radius: GAMEPLAY.enemy.radius },
+    player: {
+      x: 0,
+      y: GAMEPLAY.player.startY,
+      vx: 0,
+      vy: 0,
+      halfWidth: GAMEPLAY.player.halfWidth,
+      halfDepth: GAMEPLAY.player.halfDepth,
+    },
+    enemy: {
+      x: 0,
+      y: GAMEPLAY.enemy.startY,
+      vx: 0,
+      vy: 0,
+      halfWidth: GAMEPLAY.enemy.halfWidth,
+      halfDepth: GAMEPLAY.enemy.halfDepth,
+    },
     playerTarget: { x: 0, y: GAMEPLAY.player.startY },
     playerHp: 100,
     enemyHp: 100,
@@ -30,7 +44,11 @@ export function startGame(state) {
 }
 
 export function setTarget(state, target) {
-  state.playerTarget.x = clamp(target.x, -TABLE.halfWidth + GAMEPLAY.player.radius, TABLE.halfWidth - GAMEPLAY.player.radius);
+  state.playerTarget.x = clamp(
+    target.x,
+    -TABLE.halfWidth + GAMEPLAY.player.halfWidth,
+    TABLE.halfWidth - GAMEPLAY.player.halfWidth,
+  );
   state.playerTarget.y = clamp(target.y, TABLE.playerMinY, TABLE.playerMaxY);
 }
 
@@ -194,7 +212,7 @@ function moveStriker(body, target, dt, maxSpeed, acceleration, minY, maxY) {
 
   body.vx += clamp(desiredX - body.vx, -maxChange, maxChange);
   body.vy += clamp(desiredY - body.vy, -maxChange, maxChange);
-  body.x = clamp(body.x + body.vx * dt, -TABLE.halfWidth + body.radius, TABLE.halfWidth - body.radius);
+  body.x = clamp(body.x + body.vx * dt, -TABLE.halfWidth + body.halfWidth, TABLE.halfWidth - body.halfWidth);
   body.y = clamp(body.y + body.vy * dt, minY, maxY);
 }
 
@@ -271,17 +289,41 @@ function updateEnemy(state, dt) {
 }
 
 function collideStriker(puck, striker, events, contactMultiplier, side) {
-  const dx = puck.x - striker.x;
-  const dy = puck.y - striker.y;
-  const minDistance = puck.radius + striker.radius;
+  const minX = striker.x - striker.halfWidth;
+  const maxX = striker.x + striker.halfWidth;
+  const minY = striker.y - striker.halfDepth;
+  const maxY = striker.y + striker.halfDepth;
+  const closestX = clamp(puck.x, minX, maxX);
+  const closestY = clamp(puck.y, minY, maxY);
+  const dx = puck.x - closestX;
+  const dy = puck.y - closestY;
   const distanceSq = dx * dx + dy * dy;
-  if (distanceSq >= minDistance * minDistance) return null;
+  const radiusSq = puck.radius * puck.radius;
+  if (distanceSq > radiusSq) return null;
 
-  const distance = Math.sqrt(distanceSq) || .0001;
-  const nx = dx / distance;
-  const ny = dy / distance;
-  puck.x = striker.x + nx * minDistance;
-  puck.y = striker.y + ny * minDistance;
+  let nx = 0;
+  let ny = 0;
+
+  if (distanceSq > 1e-10) {
+    const distance = Math.sqrt(distanceSq);
+    nx = dx / distance;
+    ny = dy / distance;
+    const penetration = puck.radius - distance;
+    puck.x += nx * penetration;
+    puck.y += ny * penetration;
+  } else {
+    const faces = [
+      { distance: puck.x - minX, nx: -1, ny: 0, x: minX - puck.radius, y: puck.y },
+      { distance: maxX - puck.x, nx: 1, ny: 0, x: maxX + puck.radius, y: puck.y },
+      { distance: puck.y - minY, nx: 0, ny: -1, x: puck.x, y: minY - puck.radius },
+      { distance: maxY - puck.y, nx: 0, ny: 1, x: puck.x, y: maxY + puck.radius },
+    ];
+    const face = faces.reduce((best, candidate) => candidate.distance < best.distance ? candidate : best);
+    nx = face.nx;
+    ny = face.ny;
+    puck.x = face.x;
+    puck.y = face.y;
+  }
 
   const relative = (puck.vx - striker.vx) * nx + (puck.vy - striker.vy) * ny;
   if (relative >= 0) return null;
@@ -290,7 +332,7 @@ function collideStriker(puck, striker, events, contactMultiplier, side) {
   puck.vx += impulse * nx + striker.vx * .16 * contactMultiplier;
   puck.vy += impulse * ny + striker.vy * .16 * contactMultiplier;
   const intensity = clamp(Math.abs(relative) / 14, .15, 1);
-  const event = { type: "striker", side, x: puck.x, intensity };
+  const event = { type: "striker", side, x: puck.x, intensity, normalX: nx, normalY: ny };
   events.push(event);
   return event;
 }

@@ -8,16 +8,18 @@ export const GAMEPLAY = Object.freeze({
     radius: .27,
     maxSpeed: 15,
     damping: .045,
-    serveInset: .78,
+    serveInset: .48,
   }),
   player: Object.freeze({
-    radius: .58,
+    halfWidth: .74,
+    halfDepth: .29,
     startY: 6.15,
     normal: Object.freeze({ maxSpeed: 18, acceleration: 85, contactMultiplier: 1 }),
     surge: Object.freeze({ maxSpeed: 25, acceleration: 145, contactMultiplier: 1.3, duration: 2.4 }),
   }),
   enemy: Object.freeze({
-    radius: .58,
+    halfWidth: .74,
+    halfDepth: .29,
     startY: -6.15,
     maxSpeed: 14.5,
     acceleration: 58,
@@ -35,8 +37,8 @@ export const GAMEPLAY = Object.freeze({
 export const TABLE = Object.freeze({
   ...GAMEPLAY.table,
   playerMinY: GAMEPLAY.table.halfLength - GAMEPLAY.table.strikerZoneDepth,
-  playerMaxY: GAMEPLAY.table.halfLength - GAMEPLAY.player.radius - .12,
-  enemyMinY: -GAMEPLAY.table.halfLength + GAMEPLAY.enemy.radius + .12,
+  playerMaxY: GAMEPLAY.table.halfLength - GAMEPLAY.player.halfDepth - .12,
+  enemyMinY: -GAMEPLAY.table.halfLength + GAMEPLAY.enemy.halfDepth + .12,
   enemyMaxY: -GAMEPLAY.table.halfLength + GAMEPLAY.table.strikerZoneDepth,
 });
 

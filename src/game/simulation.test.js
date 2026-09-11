@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { GAMEPLAY } from "./config.js";
 import { FIXED_STEP, TABLE, activateSurge, createGame, setTarget, startGame, stepGame } from "./simulation.js";
 
 test("player serve starts near the player and never launches itself", () => {
@@ -52,6 +53,54 @@ test("enemy serves with its striker instead of spawning puck velocity", () => {
   assert.ok(game.puck.vy > 0);
 });
 
+test("rectangular striker dimensions are used for movement bounds", () => {
+  const game = createGame();
+  assert.equal(game.player.halfWidth, GAMEPLAY.player.halfWidth);
+  assert.equal(game.player.halfDepth, GAMEPLAY.player.halfDepth);
+  setTarget(game, { x: 99, y: 99 });
+  assert.equal(game.playerTarget.x, TABLE.halfWidth - GAMEPLAY.player.halfWidth);
+  assert.equal(game.playerTarget.y, TABLE.playerMaxY);
+});
+
+test("wide rectangular front face returns an off-center puck", () => {
+  const game = createGame();
+  game.phase = "playing";
+  Object.assign(game.player, { x: 0, y: 6, vx: 0, vy: -4 });
+  game.playerTarget = { x: 0, y: 5 };
+  Object.assign(game.puck, { x: .7, y: 5.48, vx: 0, vy: 1 });
+
+  const events = stepGame(game);
+  const hit = events.find(event => event.type === "striker" && event.side === "player");
+  assert.ok(hit);
+  assert.ok(hit.normalY < -.9);
+  assert.ok(game.puck.vy < 0);
+});
+
+test("rectangular side face transfers lateral momentum", () => {
+  const game = createGame();
+  game.phase = "playing";
+  Object.assign(game.player, { x: 0, y: 6, vx: 0, vy: 0 });
+  game.playerTarget = { x: 0, y: 6 };
+  Object.assign(game.puck, { x: .95, y: 6, vx: -5, vy: 0 });
+
+  const events = stepGame(game);
+  const hit = events.find(event => event.type === "striker" && event.side === "player");
+  assert.ok(hit);
+  assert.ok(hit.normalX > .9);
+  assert.ok(game.puck.vx > 0);
+});
+
+test("puck outside a rectangular corner does not create a false hit", () => {
+  const game = createGame();
+  game.phase = "playing";
+  Object.assign(game.player, { x: 0, y: 6, vx: 0, vy: 0 });
+  game.playerTarget = { x: 0, y: 6 };
+  Object.assign(game.puck, { x: 1.03, y: 5.61, vx: -2, vy: 2 });
+
+  const events = stepGame(game);
+  assert.ok(!events.some(event => event.type === "striker" && event.side === "player"));
+});
+
 test("reflects a puck from the side rail without tunneling", () => {
   const game = createGame();
   game.phase = "playing";
@@ -90,7 +139,7 @@ test("the full width of either end line scores without a rear-wall bounce", () =
 test("clamps pointer targets to the player defensive zone", () => {
   const game = createGame();
   setTarget(game, { x: 99, y: -99 });
-  assert.ok(game.playerTarget.x < TABLE.halfWidth);
+  assert.equal(game.playerTarget.x, TABLE.halfWidth - GAMEPLAY.player.halfWidth);
   assert.equal(game.playerTarget.y, TABLE.playerMinY);
 });
 
@@ -110,7 +159,7 @@ test("charge grows from player contact, bank shots, goals and concessions", () =
   contact.phase = "playing";
   Object.assign(contact.player, { x: 0, y: 5, vx: 0, vy: -8 });
   contact.playerTarget = { x: 0, y: 5 };
-  Object.assign(contact.puck, { x: 0, y: 4.2, vx: 0, vy: 1 });
+  Object.assign(contact.puck, { x: 0, y: 4.48, vx: 0, vy: 1 });
   const before = contact.charge;
   stepGame(contact);
   assert.ok(contact.charge > before);
@@ -173,7 +222,7 @@ test("surge contact creates a stronger return than a normal contact", () => {
     }
     Object.assign(game.player, { x: 0, y: 6, vx: 0, vy: -4 });
     game.playerTarget = { x: 0, y: 5 };
-    Object.assign(game.puck, { x: 0, y: 5.2, vx: 0, vy: 1 });
+    Object.assign(game.puck, { x: 0, y: 5.48, vx: 0, vy: 1 });
     stepGame(game);
     return -game.puck.vy;
   };
