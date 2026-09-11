@@ -19,26 +19,6 @@ test("applies more damage to a faster goal", () => {
   assert.ok(score(13) > score(4));
 });
 
-test("treats the entire end line as the goal and lets the damaged side serve", () => {
-  const game = createGame(); game.phase = "playing"; game.puck.x = TABLE.halfWidth - game.puck.radius; game.puck.y = -TABLE.halfLength - game.puck.radius; game.puck.vy = -8;
-  const events = stepGame(game);
-  assert.ok(events.some(event => event.type === "goal" && event.side === "player"));
-  assert.equal(game.phase, "serve");
-  assert.ok(game.serveTimer < 0, "the enemy lost integrity and must take the next serve");
-});
-
-test("uses rectangular striker collision bounds", () => {
-  const game = createGame(); game.phase = "playing";
-  assert.equal(game.player.radius, undefined);
-  assert.ok(game.player.halfWidth > game.player.halfLength);
-  game.puck.x = game.player.x + game.player.halfWidth + game.puck.radius / 2;
-  game.puck.y = game.player.y;
-  game.puck.vx = -4;
-  const events = stepGame(game, 0);
-  assert.ok(events.some(event => event.type === "striker"));
-  assert.ok(game.puck.vx > 0);
-});
-
 test("clamps pointer targets to the player half", () => {
   const game = createGame(); setTarget(game, { x: 99, y: -99 });
   assert.ok(game.playerTarget.x < TABLE.halfWidth); assert.ok(game.playerTarget.y > 0);

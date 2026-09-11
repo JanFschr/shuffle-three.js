@@ -1,15 +1,14 @@
-export const TABLE = { halfWidth: 4.5, halfLength: 8 };
+export const TABLE = { halfWidth: 4.5, halfLength: 8, goalHalfWidth: 1.55 };
 export const FIXED_STEP = 1 / 120;
 const PUCK_RADIUS = 0.27;
-const STRIKER_HALF_WIDTH = 0.72;
-const STRIKER_HALF_LENGTH = 0.42;
+const STRIKER_RADIUS = 0.58;
 const MAX_PUCK_SPEED = 15;
 
 export function createGame() {
   return {
     puck: { x: 0, y: 0, vx: 0, vy: 0, radius: PUCK_RADIUS },
-    player: { x: 0, y: 5.6, vx: 0, vy: 0, halfWidth: STRIKER_HALF_WIDTH, halfLength: STRIKER_HALF_LENGTH },
-    enemy: { x: 0, y: -5.6, vx: 0, vy: 0, halfWidth: STRIKER_HALF_WIDTH, halfLength: STRIKER_HALF_LENGTH },
+    player: { x: 0, y: 5.6, vx: 0, vy: 0, radius: STRIKER_RADIUS },
+    enemy: { x: 0, y: -5.6, vx: 0, vy: 0, radius: STRIKER_RADIUS },
     playerTarget: { x: 0, y: 5.6 }, playerHp: 100, enemyHp: 100,
     rally: 0, phase: "ready", serveTimer: 0, inactiveTimer: 0, time: 0,
   };
@@ -92,7 +91,16 @@ export function stepGame(state, dt = FIXED_STEP) {
 
   const line = TABLE.halfLength + state.puck.radius;
   if (Math.abs(state.puck.y) > line) {
-    scoreGoal(state, state.puck.y < 0 ? "player" : "enemy", events);
+    if (Math.abs(state.puck.x) <= TABLE.goalHalfWidth) scoreGoal(state, state.puck.y < 0 ? "player" : "enemy", events);
+    else {
+      state.puck.y = Math.sign(state.puck.y) * line;
+      state.puck.vy *= -.93;
+      events.push({ type: "rail", intensity: Math.abs(state.puck.vy) / MAX_PUCK_SPEED });
+    }
+  } else if (Math.abs(state.puck.y) > TABLE.halfLength - state.puck.radius && Math.abs(state.puck.x) > TABLE.goalHalfWidth) {
+    state.puck.y = Math.sign(state.puck.y) * (TABLE.halfLength - state.puck.radius);
+    state.puck.vy *= -.93;
+    events.push({ type: "rail", intensity: Math.abs(state.puck.vy) / MAX_PUCK_SPEED });
   }
   return events;
 }
@@ -118,7 +126,7 @@ function moveStriker(body, target, dt, maxSpeed, acceleration, bounds) {
   const maxChange = acceleration * dt;
   body.vx += clamp(desiredX - body.vx, -maxChange, maxChange);
   body.vy += clamp(desiredY - body.vy, -maxChange, maxChange);
-  body.x = clamp(body.x + body.vx * dt, -TABLE.halfWidth + body.halfWidth, TABLE.halfWidth - body.halfWidth);
+  body.x = clamp(body.x + body.vx * dt, -TABLE.halfWidth + body.radius, TABLE.halfWidth - body.radius);
   body.y = clamp(body.y + body.vy * dt, bounds.minY, bounds.maxY);
 }
 
@@ -131,19 +139,13 @@ function updateEnemy(state, dt) {
 }
 
 function collideStriker(puck, striker, events) {
-  let closestX = clamp(puck.x, striker.x - striker.halfWidth, striker.x + striker.halfWidth);
-  let closestY = clamp(puck.y, striker.y - striker.halfLength, striker.y + striker.halfLength);
-  let dx = puck.x - closestX, dy = puck.y - closestY;
-  if (dx * dx + dy * dy >= puck.radius * puck.radius) return;
-  if (dx === 0 && dy === 0) {
-    const xDepth = striker.halfWidth - Math.abs(puck.x - striker.x);
-    const yDepth = striker.halfLength - Math.abs(puck.y - striker.y);
-    if (xDepth < yDepth) { dx = Math.sign(puck.x - striker.x) || 1; closestX = striker.x + dx * striker.halfWidth; }
-    else { dy = Math.sign(puck.y - striker.y) || 1; closestY = striker.y + dy * striker.halfLength; }
-  }
-  const distance = Math.hypot(dx, dy) || 1;
+  const dx = puck.x - striker.x, dy = puck.y - striker.y;
+  const minDistance = puck.radius + striker.radius;
+  const distanceSq = dx * dx + dy * dy;
+  if (distanceSq >= minDistance * minDistance) return;
+  const distance = Math.sqrt(distanceSq) || .0001;
   const nx = dx / distance, ny = dy / distance;
-  puck.x = closestX + nx * puck.radius; puck.y = closestY + ny * puck.radius;
+  puck.x = striker.x + nx * minDistance; puck.y = striker.y + ny * minDistance;
   const relative = (puck.vx - striker.vx) * nx + (puck.vy - striker.vy) * ny;
   if (relative < 0) {
     const impulse = -(1 + .9) * relative;

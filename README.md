@@ -25,6 +25,18 @@ Page funktioniert. Falls die Organisation das automatische Aktivieren von Pages
 verbietet, muss ein Repository-Administrator Pages einmalig unter
 **Settings → Pages** freigeben und anschließend den Workflow erneut starten.
 
+Pull Requests aus internen Branches mit dem Präfix `codex/` oder dem von Codex
+verwendeten Branch `work` werden nach
+erfolgreicher Syntax- und Testprüfung automatisch per Squash-Merge übernommen.
+Forks, Entwürfe und anders benannte Branches sind davon ausdrücklich
+ausgeschlossen. Damit der Workflow mergen darf, muss unter
+**Settings → Actions → General → Workflow permissions** die Option
+**Read and write permissions** aktiviert sein.
+Nach dem automatischen Merge stößt die Action zusätzlich das GitHub-Pages-
+Deployment für `main` an.
+Die Pull-Request-Änderung, welche diese Action erstmals einführt, muss einmalig
+manuell gemergt werden; erst danach kann der Workflow neue Codex-PRs erkennen.
+
 Ein eigener Server, ein lokaler Python-Prozess oder ein Node.js-Prozess zur
 Laufzeit ist nicht erforderlich. Node.js wird ausschließlich für den optionalen
 Simulationstest verwendet und ist kein Bestandteil des Deployments.

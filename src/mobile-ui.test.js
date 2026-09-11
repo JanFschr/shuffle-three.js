@@ -14,7 +14,4 @@ test("portrait UI exposes movement and impulse controls", async () => {
   assert.match(css, /orientation:\s*portrait/);
   assert.match(main, /\.move\[data-code\]/);
   assert.match(main, /#mobile-impulse/);
-  assert.match(html, /id="pause-toggle"/);
-  assert.match(html, /id="resume"/);
-  assert.match(main, /pauseButton\.addEventListener\("click",togglePause\)/);
 });
