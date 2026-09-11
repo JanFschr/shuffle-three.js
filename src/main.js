@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GameAudio } from "./audio.js";
+import { GAMEPLAY } from "./game/config.js";
 import { FIXED_STEP, TABLE, activateSurge, createGame, setTarget, startGame, stepGame } from "./game/simulation.js";
 
 const canvas = document.querySelector("#game");
@@ -165,17 +166,94 @@ function roundedDisc(radius, color, emissive, topColor, height = .28) {
   return group;
 }
 
-const puckMesh = roundedDisc(.27, 0xc9d9cf, 0x4cae9a, 0xe2efe9, .18);
-const playerMesh = roundedDisc(.58, 0x872c32, 0x8e1e2f, 0xe0c5aa, .3);
-const enemyMesh = roundedDisc(.58, 0x25433b, 0x216c5b, 0xb2d4c8, .3);
+function rectangularStriker(halfWidth, halfDepth, color, emissive, topColor) {
+  const group = new THREE.Group();
+  const width = halfWidth * 2;
+  const depth = halfDepth * 2;
+  const height = .3;
+  const bodyGeometry = new THREE.BoxGeometry(width, height, depth);
+  const body = new THREE.Mesh(
+    bodyGeometry,
+    new THREE.MeshStandardMaterial({
+      color,
+      metalness: .68,
+      roughness: .32,
+      emissive,
+      emissiveIntensity: .24,
+    }),
+  );
+  group.add(body);
 
-const playerAura = new THREE.Mesh(
-  new THREE.RingGeometry(.67, .73, 44),
-  new THREE.MeshBasicMaterial({ color: 0xd8a063, transparent: true, opacity: 0, side: THREE.DoubleSide }),
+  const top = new THREE.Mesh(
+    new THREE.BoxGeometry(width * .72, .035, depth * .6),
+    new THREE.MeshStandardMaterial({
+      color: topColor,
+      metalness: .42,
+      roughness: .38,
+      emissive,
+      emissiveIntensity: .1,
+    }),
+  );
+  top.position.y = height / 2 + .018;
+  group.add(top);
+
+  const strikeFace = new THREE.Mesh(
+    new THREE.BoxGeometry(width * .84, .075, .055),
+    new THREE.MeshStandardMaterial({
+      color: topColor,
+      emissive: topColor,
+      emissiveIntensity: .28,
+      metalness: .32,
+      roughness: .34,
+    }),
+  );
+  strikeFace.position.set(0, .02, -halfDepth - .027);
+  group.add(strikeFace);
+
+  const edge = new THREE.LineSegments(
+    new THREE.EdgesGeometry(bodyGeometry),
+    new THREE.LineBasicMaterial({ color: topColor, transparent: true, opacity: .48 }),
+  );
+  group.add(edge);
+
+  scene.add(group);
+  return group;
+}
+
+function rectangularAura(halfWidth, halfDepth) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-halfWidth, 0, -halfDepth),
+    new THREE.Vector3(halfWidth, 0, -halfDepth),
+    new THREE.Vector3(halfWidth, 0, halfDepth),
+    new THREE.Vector3(-halfWidth, 0, halfDepth),
+  ]);
+  const aura = new THREE.LineLoop(
+    geometry,
+    new THREE.LineBasicMaterial({ color: 0xd8a063, transparent: true, opacity: 0 }),
+  );
+  aura.position.y = .02;
+  scene.add(aura);
+  return aura;
+}
+
+const puckMesh = roundedDisc(.27, 0xc9d9cf, 0x4cae9a, 0xe2efe9, .18);
+const playerMesh = rectangularStriker(
+  GAMEPLAY.player.halfWidth,
+  GAMEPLAY.player.halfDepth,
+  0x872c32,
+  0x8e1e2f,
+  0xe0c5aa,
 );
-playerAura.rotation.x = -Math.PI / 2;
-playerAura.position.y = .02;
-scene.add(playerAura);
+const enemyMesh = rectangularStriker(
+  GAMEPLAY.enemy.halfWidth,
+  GAMEPLAY.enemy.halfDepth,
+  0x25433b,
+  0x216c5b,
+  0xb2d4c8,
+);
+enemyMesh.rotation.y = Math.PI;
+
+const playerAura = rectangularAura(GAMEPLAY.player.halfWidth + .1, GAMEPLAY.player.halfDepth + .1);
 
 const reticle = new THREE.Mesh(
   new THREE.RingGeometry(.13, .17, 24),
@@ -565,7 +643,7 @@ function updateUi() {
 
   playerAura.position.x = state.player.x;
   playerAura.position.z = state.player.y;
-  playerAura.material.opacity = active ? .32 + Math.sin(state.time * 22) * .12 : 0;
+  playerAura.material.opacity = active ? .48 + Math.sin(state.time * 22) * .16 : 0;
   playerAura.scale.setScalar(active ? 1 + Math.sin(state.time * 15) * .04 : 1);
 }
 
